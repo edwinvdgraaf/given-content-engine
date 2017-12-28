@@ -1,0 +1,11 @@
+[package]
+name = "test_support"
+version = "0.1.0"
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+given_content_engine = { path = "../.." }
+git2 = { version = "0.6", default-features = false }
+tempdir = "0.3"
