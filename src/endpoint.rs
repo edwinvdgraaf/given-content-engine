@@ -1,4 +1,5 @@
-struct RequestParams {
+#[derive(Debug)]
+struct QueryString {
     key: String,
     value: String,
 }
@@ -31,7 +32,7 @@ impl<'a> Request<'a> {
         &self.path[0..resource_seperator_pos]
     }
 
-    fn members(&self) -> Option<&'a str> {
+    fn resource_params(&self) -> Option<&'a str> {
         // Find all seperators in path
         let seperator = "/";
 
@@ -48,13 +49,18 @@ impl<'a> Request<'a> {
 
         Some(&self.path[resource_seperator_pos..self.path.len()])
     }
+
+    fn query_string(&self) -> Vec<QueryString> {
+        vec![]
+    }
 }
 
 fn config_handle(request: Request) -> Result<String, String> {
     Ok(format!(
-        "config handle for resource: {} and members: {:?}",
+        "config handle for resource: {} and resource_params: {:?} with query_string {:?}",
         request.resource(),
-        request.members()
+        request.resource_params(),
+        request.query_string()
     ).into())
 }
 
@@ -81,6 +87,8 @@ mod tests {
         let request = Request { path: &id };
 
         assert_eq!(request.resource(), "/config");
+        assert_eq!(request.resource_params(), None);
+        assert_eq!(request.query_string().len(), 0);
     }
 
     #[test]
@@ -89,7 +97,7 @@ mod tests {
         let request = Request { path: &id };
 
         assert_eq!(request.resource(), "/posts");
-        assert_eq!(request.members(), Some("12"));
+        assert_eq!(request.resource_params(), Some("12"));
     }
 
     #[test]
@@ -100,6 +108,6 @@ mod tests {
         let request = Request { path: &id };
 
         assert_eq!(request.resource(), "/posts");
-        assert_eq!(request.members(), Some(""));
+        assert_eq!(request.resource_params(), Some(""));
     }
 }

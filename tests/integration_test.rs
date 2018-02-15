@@ -44,9 +44,10 @@ mod integration_test {
 
     #[test]
     fn endpoint_test() {
+        // Very annoying test remove
         assert_eq!(
             endpoint::call("/config").unwrap(),
-            "config handle for resource: /config and members: None"
+            "config handle for resource: /config and resource_params: None with query_string []"
         )
     }
 
