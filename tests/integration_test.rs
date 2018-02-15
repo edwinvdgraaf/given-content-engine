@@ -5,19 +5,7 @@ extern crate test_support;
 mod integration_test {
     use test_support::git;
     use tempdir::TempDir;
-    use given_content_engine::{utils, Post, Store};
-
-    #[test]
-    fn it_works() {
-        let td = TempDir::new("test").unwrap();
-        let path = td.path();
-
-        let (repo, _dir) = git::RepoBuilder::init(path)
-            .file("index.md", "Content inside file index.md")
-            .build_bare();
-
-        let file = utils::read_file(&repo, "index.md", "master");
-    }
+    use given_content_engine::{endpoint, Post, Store};
 
     #[test]
     fn query_a_list_of_post() {
@@ -53,4 +41,13 @@ mod integration_test {
 
         assert_eq!(post.content, "Content of my post");
     }
+
+    #[test]
+    fn endpoint_test() {
+        assert_eq!(
+            endpoint::call("/config").unwrap(),
+            "config handle for resource: /config and members: None"
+        )
+    }
+
 }

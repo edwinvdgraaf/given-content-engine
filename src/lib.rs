@@ -17,6 +17,7 @@ mod config;
 mod content_types;
 mod front_matter;
 mod file;
+pub mod endpoint;
 
 pub mod utils;
 pub mod store;
