@@ -1,6 +1,6 @@
 use git2::Repository;
 
-use config::{parse_config, Config};
+use config::Config;
 use utils;
 
 pub struct Store {
@@ -17,7 +17,7 @@ impl Store {
         // TODO: Currently it breaks on projects without config :/
         // add more graceful handling
         let config_string = utils::read_file(&repo, "config.yml", branch);
-        let config = parse_config(&config_string).unwrap();
+        let config = Config::parse(&config_string).unwrap();
 
         Store {
             repo: repo,
