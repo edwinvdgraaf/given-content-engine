@@ -2,6 +2,7 @@ use git2::Repository;
 use utils;
 use file::File;
 use store::Store;
+use front_matter::FrontMatter;
 
 #[derive(Debug)]
 pub struct Post {
@@ -28,9 +29,22 @@ pub struct PostSingleBuilder {
 
 impl From<File> for Post {
     fn from(file: File) -> Self {
+        let meta: Option<PostMetaData> = match file.front_matter {
+            Some(f) => Some(f.into()),
+            None => None,
+        };
+
         Post {
             content: file.body,
-            meta: None,
+            meta: meta,
+        }
+    }
+}
+
+impl From<FrontMatter> for PostMetaData {
+    fn from(front_matter: FrontMatter) -> Self {
+        PostMetaData {
+            tags: vec![String::from("tag1"), String::from("tag2")],
         }
     }
 }
@@ -118,7 +132,10 @@ mod tests {
                 "config.yml",
                 "{ site_name: Value A, site_url: 66, description: \"67\" }",
             )
-            .file("_posts/2018-1-1-my-post.md", "Content of my post")
+            .file(
+                "_posts/2018-1-1-my-post.md",
+                "---\nla: hi\n---\nContent of my post",
+            )
             .build_bare();
     }
 
@@ -131,6 +148,7 @@ mod tests {
         assert_eq!(builder.to, 5);
 
         let posts = builder.execute(&initialized_repo);
+
         assert_eq!(posts[0].content, "Content of my post");
     }
 
