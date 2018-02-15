@@ -4,7 +4,7 @@ use front_matter::FrontMatter;
 
 #[derive(Debug)]
 pub struct File {
-    front_matter: Option<FrontMatter>,
+    pub front_matter: Option<FrontMatter>,
     pub body: String,
 }
 
@@ -51,7 +51,7 @@ impl File {
                 let front_matter_end: usize = cursor.position() as usize;
                 return (
                     &utf8[front_matter_start..front_matter_end],
-                    &utf8[front_matter_end + 1..utf8.len()],
+                    &utf8[(front_matter_end - 1) + 1..utf8.len()],
                 );
             }
         }
@@ -72,13 +72,11 @@ mod tests {
 la: hi
 ---
 # My first post
-Lorem ipsum dolor sit amet, consectetur adipisicing elit. 
-Voluptas quia perferendis, tenetur optio doloribus repellendus commodi tempora provident, 
-sunt quasi ab excepturi. Iusto quasi cupiditate consectetur facere officia rem similique.
 ",
         );
 
         assert!(file.front_matter.is_some());
+        assert_eq!(file.body, "# My first post\n");
     }
 
     #[test]
