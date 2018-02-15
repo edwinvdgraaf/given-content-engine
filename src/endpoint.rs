@@ -58,12 +58,16 @@ fn config_handle(request: Request) -> Result<String, String> {
     ).into())
 }
 
+fn error_handle(request: Request) -> Result<String, String> {
+    Err(format!("Cannot find path {}", request.resource()).into())
+}
+
 pub fn call(request_path: &str) -> Result<String, String> {
     let request: Request = Request::new(&request_path);
 
     match request.resource() {
         "/config" => config_handle(request),
-        _ => Err(format!("Cannot find path {}", request.resource()).into()),
+        _ => error_handle(request),
     }
 }
 
