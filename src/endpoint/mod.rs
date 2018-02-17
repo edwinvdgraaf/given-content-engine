@@ -12,12 +12,19 @@ fn config_handle(_request: Request, store: &Store) -> Result<String, String> {
     }
 }
 
-fn posts_handle(request: Request, store: &Store) -> Result<String, String> {
+fn posts_handle(_request: Request, _store: &Store) -> Result<String, String> {
     // if request.resource_params().is_none() {
     //     return json_string(Posts)
     // }
 
     Err("Not implement".to_owned())
+}
+
+fn healthcheck_handle(_request: Request, store: &Store) -> Result<String, String> {
+    match json_string(&store.health_check()) {
+        Ok(result) => Ok(result),
+        _ => Err("Cannot parse health check".to_owned()),
+    }
 }
 
 fn error_handle(request: Request) -> Result<String, String> {
@@ -39,6 +46,7 @@ pub fn call(request_path: &str, store: &Store) -> Result<String, String> {
     match request.resource() {
         "/config" => config_handle(request, store),
         "/posts" => posts_handle(request, store),
+        "/healthcheck" => healthcheck_handle(request, store),
         "/_debug" => debug_handle(request),
         _ => error_handle(request),
     }

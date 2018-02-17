@@ -63,26 +63,23 @@ mod integration_test {
 
         let store = Store::init(repo);
 
-        assert!(
-            endpoint::call("/config", &store)
-                .unwrap()
-                .contains("site_name")
-        );
-        assert!(
-            endpoint::call("/config", &store)
-                .unwrap()
-                .contains("site_url")
-        );
-        assert!(
-            endpoint::call("/config", &store)
-                .unwrap()
-                .contains("description")
-        );
-        assert!(
-            endpoint::call("/config", &store)
-                .unwrap()
-                .contains("Value A")
-        );
+        let data = endpoint::call("/config", &store).unwrap();
+
+        // Hahaha so crap but works
+        assert!(data.starts_with("{"));
+        assert!(data.ends_with("}"));
+
+        // Check the containing data
+        assert!(data.contains("site_name"));
+        assert!(data.contains("site_url"));
+        assert!(data.contains("description"));
+        assert!(data.contains("Value A"));
+
+        let status = endpoint::call("/healthcheck", &store).unwrap();
+        assert!(status.starts_with("{"));
+        assert!(status.ends_with("}"));
+        assert!(status.contains("master"));
+        assert!(status.contains("\"total_files\":3"));
     }
 
 }

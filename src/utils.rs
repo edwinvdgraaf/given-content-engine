@@ -137,11 +137,15 @@ mod tests {
             )
             .build();
 
-        let files = read_dir(&repo, "master", Some("_posts"));
+        let root_files = read_dir(&repo, "master", None);
+        assert_eq!(root_files.len(), 4);
+        assert_eq!(root_files[3], "index.md");
 
-        assert_eq!(files.len(), 3);
-        assert_eq!(files[0], "_posts/2018-1-1-my-first-post.md");
-        assert_eq!(files[1], "_posts/2018-1-2-my-first-post.md");
-        assert_eq!(files[2], "_posts/2018-1-3-my-first-post.md");
+        let post_files = read_dir(&repo, "master", Some("_posts"));
+
+        assert_eq!(post_files.len(), 3);
+        assert_eq!(post_files[0], "_posts/2018-1-1-my-first-post.md");
+        assert_eq!(post_files[1], "_posts/2018-1-2-my-first-post.md");
+        assert_eq!(post_files[2], "_posts/2018-1-3-my-first-post.md");
     }
 }
