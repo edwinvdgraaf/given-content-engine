@@ -43,7 +43,7 @@ impl From<File> for Post {
 impl From<FrontMatter> for PostMetaData {
     fn from(front_matter: FrontMatter) -> Self {
         PostMetaData {
-            tags: vec![String::from("tag1"), String::from("tag2")],
+            tags: front_matter.tags,
         }
     }
 }
@@ -67,19 +67,31 @@ impl Post {
     }
 
     // Implement this one generic over list and single query post
-    pub fn query_list(query_builder: &PostQueryBuilder, repo: &Repository) -> Vec<Post> {
+    pub fn query_list(_query_builder: &PostQueryBuilder, store: &Store) -> Vec<Post> {
         // Init with capactiy if possible
-        let files = utils::read_dir(&repo, "master", Some("_posts"));
+        let files = utils::read_dir(&store.repo, "master", Some("_posts"));
 
         files
             .into_iter()
-            .map(|file_path| File::parse_file(&utils::read_file_raw(&repo, &file_path, "master")))
+            .map(|file_path| {
+                File::parse_file(&utils::read_file_raw(&store.repo, &file_path, "master"))
+            })
             .map(|file| file.into())
             .collect()
     }
 
     pub fn query_one(single_builder: &PostSingleBuilder, store: &Store) -> Post {
-        let file_path: String = format!("_posts/{}", single_builder.id);
+        let file_path: String;
+
+        // Default lang en, decide on weither this should be put in file name -- meh
+        if single_builder.language != "en" {
+            file_path = format!(
+                "_posts/{}-{}-{}",
+                single_builder.id, single_builder.language, "md"
+            );
+        } else {
+            file_path = format!("_posts/{}", single_builder.id);
+        }
 
         File::parse_file(&utils::read_file_raw(
             &store.repo,
@@ -96,8 +108,8 @@ impl PostSingleBuilder {
 }
 
 impl PostQueryBuilder {
-    pub fn execute(&self, repo: &Repository) -> Vec<Post> {
-        Post::query_list(&self, &repo)
+    pub fn execute(&self, store: &Store) -> Vec<Post> {
+        Post::query_list(&self, &store)
     }
 
     pub fn offset(mut self, from: u32, to: u32) -> Self {
@@ -146,7 +158,9 @@ mod tests {
         assert_eq!(builder.from, 0);
         assert_eq!(builder.to, 5);
 
-        let posts = builder.execute(&initialized_repo);
+        let store = Store::init(initialized_repo);
+
+        let posts = builder.execute(&store);
 
         assert_eq!(posts[0].content, "Content of my post");
     }
@@ -158,7 +172,10 @@ mod tests {
         assert_eq!(builder.from, 0);
         assert_eq!(builder.to, 10);
 
-        let posts = builder.execute(&initialized_repo);
+        let store = Store::init(initialized_repo);
+
+        let posts = builder.execute(&store);
+
         assert_eq!(posts[0].content, "Content of my post");
     }
 
@@ -169,7 +186,10 @@ mod tests {
         assert_eq!(builder.from, 0);
         assert_eq!(builder.to, <u32>::max_value());
 
-        let posts = builder.execute(&initialized_repo);
+        let store = Store::init(initialized_repo);
+
+        let posts = builder.execute(&store);
+
         assert_eq!(posts[0].content, "Content of my post");
     }
 

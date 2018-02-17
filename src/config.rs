@@ -1,5 +1,4 @@
 use serde_yaml::{from_str, Error};
-use serde_json::to_string as json_string;
 
 fn empty_vec() -> Vec<NavItems> {
     Vec::new()
@@ -24,10 +23,6 @@ pub struct NavItems {
 impl Config {
     pub fn parse<'a>(str_config: &str) -> Result<Config, Error> {
         from_str(str_config)
-    }
-
-    pub fn to_string(&self) -> String {
-        json_string(&self).unwrap()
     }
 }
 

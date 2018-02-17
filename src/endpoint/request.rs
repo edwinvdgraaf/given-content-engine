@@ -1,21 +1,21 @@
 #[derive(Debug)]
-struct QueryString {
+pub struct QueryString {
     key: String,
     value: String,
 }
 
-struct Request<'a> {
+pub struct Request<'a> {
     path: &'a str,
 }
 
 impl<'a> Request<'a> {
-    fn new(path: &'a str) -> Self {
+    pub fn new(path: &'a str) -> Self {
         // Add validation
         // starts with one /
         Request { path: &path }
     }
 
-    fn resource(&self) -> &'a str {
+    pub fn resource(&self) -> &'a str {
         // Find all seperators in path
         let seperator = "/";
 
@@ -32,7 +32,7 @@ impl<'a> Request<'a> {
         &self.path[0..resource_seperator_pos]
     }
 
-    fn resource_params(&self) -> Option<&'a str> {
+    pub fn resource_params(&self) -> Option<&'a str> {
         // Find all seperators in path
         let seperator = "/";
 
@@ -44,36 +44,14 @@ impl<'a> Request<'a> {
             return None;
         }
 
-        // Find position from where to get the members
+        // Find position from where to get the resource_params string
         let resource_seperator_pos = matches[1].0 + 1;
 
         Some(&self.path[resource_seperator_pos..self.path.len()])
     }
 
-    fn query_string(&self) -> Vec<QueryString> {
+    pub fn query_string(&self) -> Vec<QueryString> {
         vec![]
-    }
-}
-
-fn config_handle(request: Request) -> Result<String, String> {
-    Ok(format!(
-        "config handle for resource: {} and resource_params: {:?} with query_string {:?}",
-        request.resource(),
-        request.resource_params(),
-        request.query_string()
-    ).into())
-}
-
-fn error_handle(request: Request) -> Result<String, String> {
-    Err(format!("Cannot find path {}", request.resource()).into())
-}
-
-pub fn call(request_path: &str) -> Result<String, String> {
-    let request: Request = Request::new(&request_path);
-
-    match request.resource() {
-        "/config" => config_handle(request),
-        _ => error_handle(request),
     }
 }
 
