@@ -1,4 +1,3 @@
-use git2::Repository;
 use utils;
 use file::File;
 use store::Store;
@@ -117,10 +116,10 @@ impl PostQueryBuilder {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use git2::Repository;
     use test_support::git;
     use test_support::git::DroppableDirectory;
     use tempdir::TempDir;
-    use std::mem;
 
     fn build_repo_with_content() -> (Repository, DroppableDirectory) {
         let td = TempDir::new("given-test-dir").unwrap();

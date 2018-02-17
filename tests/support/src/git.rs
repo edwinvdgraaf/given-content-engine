@@ -35,19 +35,15 @@ pub struct RepoBuilder {
     path: PathBuf,
 }
 
-pub struct BareRepoBuilder {
-    repo: git2::Repository,
-}
-
 pub fn repo(p: &Path) -> RepoBuilder {
     RepoBuilder::init(p)
 }
 
 pub fn repo_into_bare(clone_path: &PathBuf, into_path: &Path) -> git2::Repository {
-    let mut nativeBuilder = git2::build::RepoBuilder::new();
-    nativeBuilder.bare(true);
+    let mut native_builder = git2::build::RepoBuilder::new();
+    native_builder.bare(true);
 
-    nativeBuilder
+    native_builder
         .clone(clone_path.to_str().unwrap(), into_path)
         .unwrap()
 }

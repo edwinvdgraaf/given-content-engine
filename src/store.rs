@@ -35,7 +35,6 @@ impl Store {
 mod tests {
     use super::*;
     use test_support::git;
-    use test_support::git::DroppableDirectory;
     use tempdir::TempDir;
 
     #[test]
@@ -43,7 +42,7 @@ mod tests {
         let td = TempDir::new("given-test-dir").unwrap();
         let path = td.path();
 
-        let (repo, dir) = git::RepoBuilder::init(path)
+        let (repo, _dir) = git::RepoBuilder::init(path)
             .file(
                 "config.yml",
                 "{ site_name: Value A, site_url: 66, description: \"67\" }",
