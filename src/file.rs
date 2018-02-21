@@ -69,7 +69,7 @@ mod tests {
     fn parse_file_test() {
         let file = File::parse_file(
             b"---
-la: hi
+title: hi
 ---
 # My first post
 ",
@@ -97,7 +97,7 @@ sunt quasi ab excepturi. Iusto quasi cupiditate consectetur facere officia rem s
     fn parse_broken_front_matter_file_test() {
         let file = File::parse_file(
             b"---
-la: hi
+title: hi
 # My first post
 Lorem ipsum dolor sit amet, consectetur adipisicing elit. 
 Voluptas quia perferendis, tenetur optio doloribus repellendus commodi tempora provident, 

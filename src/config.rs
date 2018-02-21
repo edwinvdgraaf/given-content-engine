@@ -4,12 +4,17 @@ fn empty_vec() -> Vec<NavItems> {
     Vec::new()
 }
 
+fn default_resolve_extension() -> String {
+    String::from("md")
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct Config {
     pub site_name: String,
     pub site_url: String,
     pub description: String,
     #[serde(default = "empty_vec")] pub toc: Vec<NavItems>,
+    #[serde(default = "default_resolve_extension")] pub resolve_extension: String,
 }
 
 #[derive(Debug, PartialEq, Serialize, Deserialize)]

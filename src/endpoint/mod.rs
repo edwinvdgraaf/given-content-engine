@@ -4,6 +4,7 @@ use serde_json::to_string as json_string;
 
 use self::request::Request;
 use Store;
+use Post;
 
 fn config_handle(_request: Request, store: &Store) -> Result<String, String> {
     match json_string(&store.config) {
@@ -12,12 +13,25 @@ fn config_handle(_request: Request, store: &Store) -> Result<String, String> {
     }
 }
 
-fn posts_handle(_request: Request, _store: &Store) -> Result<String, String> {
-    // if request.resource_params().is_none() {
-    //     return json_string(Posts)
-    // }
+fn posts_handle(request: Request, store: &Store) -> Result<String, String> {
+    println!("{:?}", request.resource_params());
 
-    Err("Not implement".to_owned())
+    // Left here
+    if request.resource_params().is_none() {
+        let posts = Post::list_posts().all().execute(&store);
+
+        return match json_string(&posts) {
+            Ok(result) => Ok(result),
+            _ => Err("Error getting posts".to_owned()),
+        };
+    } else {
+        let post = Post::find("2018-1-1-my-post").execute(&store);
+
+        return match json_string(&post) {
+            Ok(result) => Ok(result),
+            _ => Err("Error getting post".to_owned()),
+        };
+    }
 }
 
 fn healthcheck_handle(_request: Request, store: &Store) -> Result<String, String> {
@@ -46,7 +60,7 @@ pub fn call(request_path: &str, store: &Store) -> Result<String, String> {
     match request.resource() {
         "/config" => config_handle(request, store),
         "/posts" => posts_handle(request, store),
-        "/healthcheck" => healthcheck_handle(request, store),
+        "/health_check" => healthcheck_handle(request, store),
         "/_debug" => debug_handle(request),
         _ => error_handle(request),
     }

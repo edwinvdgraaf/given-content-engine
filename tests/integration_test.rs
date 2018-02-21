@@ -42,7 +42,7 @@ mod integration_test {
             .build_bare();
 
         let store = Store::init(repo);
-        let post = Post::find("2018-1-1-my-post.md").execute(&store);
+        let post = Post::find("2018-1-1-my-post").execute(&store);
 
         assert_eq!(post.content, "Content of my post");
     }
@@ -58,7 +58,10 @@ mod integration_test {
                 "{ site_name: Value A, site_url: 66, description: \"67\" }",
             )
             .file("index.md", "Content inside file index.md")
-            .file("_posts/2018-1-1-my-post.md", "Content of my post")
+            .file(
+                "_posts/2018-1-1-my-post.md",
+                "---\ntags: first-post\n---\nContent of my post",
+            )
             .build_bare();
 
         let store = Store::init(repo);
@@ -75,11 +78,19 @@ mod integration_test {
         assert!(data.contains("description"));
         assert!(data.contains("Value A"));
 
-        let status = endpoint::call("/healthcheck", &store).unwrap();
+        let status = endpoint::call("/health_check", &store).unwrap();
         assert!(status.starts_with("{"));
         assert!(status.ends_with("}"));
         assert!(status.contains("master"));
         assert!(status.contains("\"total_files\":3"));
+
+        let posts = endpoint::call("/posts", &store).unwrap();
+        assert!(posts.starts_with("["));
+        assert!(posts.ends_with("]"));
+
+        let post = endpoint::call("/posts/2018-1-1-my-post", &store).unwrap();
+        assert!(post.starts_with("{"));
+        assert!(post.ends_with("}"));
     }
 
 }

@@ -6,9 +6,13 @@ fn empty_vec() -> Vec<String> {
     Vec::with_capacity(0)
 }
 
+fn empty_string() -> String {
+    "".to_owned()
+}
+
 #[derive(Debug, PartialEq, Serialize, Deserialize)]
 pub struct FrontMatter {
-    la: String,
+    #[serde(default = "empty_string")] title: String,
     #[serde(default = "empty_vec")] pub tags: Vec<String>,
 }
 
@@ -41,8 +45,8 @@ impl FrontMatter {
         let mut lines_iter = cursor.lines().map(|l| l.unwrap());
         let mut first_line = lines_iter.next();
 
+        // For files starting with an empty line
         if first_line == Some(String::from("\n")) {
-            println!("{:?}", "Found new line");
             first_line = lines_iter.next()
         }
 
@@ -77,8 +81,21 @@ mod tests {
 
     #[test]
     fn build_test() {
-        let matter = FrontMatter::build(b"---\nla: Lorem ipsum\nYo: No clue\n---").unwrap();
-        assert_eq!(matter.la, "Lorem ipsum");
+        let matter = FrontMatter::build(b"---\ntitle: Lorem ipsum\nYo: No clue\n---").unwrap();
+        assert_eq!(matter.title, "Lorem ipsum");
+    }
+
+    #[test]
+    fn example_test() {
+        let input = r#"---
+title: Title of my post
+tags: [my-first-post, my-tags]
+---
+        "#;
+
+        let matter = FrontMatter::build(&input.as_bytes()).unwrap();
+        assert_eq!(matter.title, "Title of my post");
+        assert_eq!(matter.tags, vec!["my-first-post", "my-tags"]);
     }
 
     #[test]
@@ -96,7 +113,7 @@ mod tests {
 
     #[test]
     fn without_ending_delimiter_test() {
-        let matter = FrontMatter::build(b"---\nla: Hi\n");
+        let matter = FrontMatter::build(b"---\ntitle: Hi\n");
         assert!(matter.is_err());
         let err = matter.unwrap_err();
         match err {
@@ -107,14 +124,14 @@ mod tests {
         }
     }
 
-    #[test]
-    fn parse_error_test() {
-        let matter = FrontMatter::build(b"---\nna: Hi\n---");
-        assert!(matter.is_err());
-        let err = matter.unwrap_err();
-        match err {
-            FrontMatterError::Parse(err) => assert!(err.to_string().contains("missing field")),
-            FrontMatterError::Extract(_) => panic!("Expected: FrontMatterError::Extract error"),
-        }
-    }
+    // #[test]
+    // fn parse_error_test() {
+    //     let matter = FrontMatter::build(b"---\nna: Hi\n---");
+    //     assert!(matter.is_err());
+    //     let err = matter.unwrap_err();
+    //     match err {
+    //         FrontMatterError::Parse(err) => assert!(err.to_string().contains("missing field")),
+    //         FrontMatterError::Extract(_) => panic!("Expected: FrontMatterError::Extract error"),
+    //     }
+    // }
 }

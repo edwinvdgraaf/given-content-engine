@@ -3,13 +3,13 @@ use file::File;
 use store::Store;
 use front_matter::FrontMatter;
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct Post {
     pub content: String,
-    pub meta: Option<PostMetaData>,
+    pub meta: PostMetaData,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct PostMetaData {
     tags: Vec<String>,
 }
@@ -23,14 +23,13 @@ pub struct PostQueryBuilder {
 
 pub struct PostSingleBuilder {
     id: String,
-    language: String,
 }
 
 impl From<File> for Post {
     fn from(file: File) -> Self {
-        let meta: Option<PostMetaData> = match file.front_matter {
-            Some(f) => Some(f.into()),
-            None => None,
+        let meta: PostMetaData = match file.front_matter {
+            Some(f) => f.into(),
+            None => PostMetaData { tags: vec![] },
         };
 
         Post {
@@ -62,7 +61,6 @@ impl Post {
     pub fn find(id: &str) -> PostSingleBuilder {
         PostSingleBuilder {
             id: String::from(id),
-            language: String::from("en"),
         }
     }
 
@@ -81,23 +79,17 @@ impl Post {
     }
 
     pub fn query_one(single_builder: &PostSingleBuilder, store: &Store) -> Post {
-        let file_path: String;
-
-        // Default lang en, decide on weither this should be put in file name -- meh
-        if single_builder.language != "en" {
-            file_path = format!(
-                "_posts/{}-{}-{}",
-                single_builder.id, single_builder.language, "md"
-            );
-        } else {
-            file_path = format!("_posts/{}", single_builder.id);
-        }
+        let file_path: String = Self::translate_id_to_filepath(&single_builder.id, &store);
 
         File::parse_file(&utils::read_file_raw(
             &store.repo,
             &file_path,
             store.branch(),
         )).into()
+    }
+
+    fn translate_id_to_filepath(file_name: &str, store: &Store) -> String {
+        format!("_posts/{}.{}", file_name, store.config.resolve_extension)
     }
 }
 
@@ -145,7 +137,13 @@ mod tests {
             )
             .file(
                 "_posts/2018-1-1-my-post.md",
-                "---\nla: hi\n---\nContent of my post",
+                r#"---
+title: Title of my post
+tags: 
+    - my-first-post
+    - my-tags
+---
+Content of my post"#,
             )
             .build_bare();
     }
@@ -189,17 +187,20 @@ mod tests {
         let store = Store::init(initialized_repo);
 
         let posts = builder.execute(&store);
+        let content = &posts[0].content;
+        let meta = &posts[0].meta;
 
-        assert_eq!(posts[0].content, "Content of my post");
+        assert_eq!(meta.tags, vec!["my-first-post", "my-tags"]);
+        assert_eq!(content, "Content of my post");
     }
 
     #[test]
     fn find_post_by_identifier() {
         let (initialized_repo, _dir) = build_repo_with_content();
         let store = Store::init(initialized_repo);
-        let builder = Post::find("2018-1-1-my-post.md");
+        let builder = Post::find("2018-1-1-my-post");
 
-        assert_eq!(builder.id, "2018-1-1-my-post.md");
+        assert_eq!(builder.id, "2018-1-1-my-post");
 
         let post = builder.execute(&store);
         assert_eq!(post.content, "Content of my post");
